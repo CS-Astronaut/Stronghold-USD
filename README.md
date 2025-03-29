@@ -34,7 +34,7 @@ This project is a Telegram bot that fetches the daily USD price from the interne
    ```
 2. Install dependencies:
    ```bash
-   pip install pillow asyncio aiocron python-telegram-bot requests bs4
+   pip install pillow asyncio pytz python-telegram-bot requests bs4
    ```
 3. Set up the `mytoken.py` file with your Telegram bot token:
    ```python

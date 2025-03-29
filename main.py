@@ -1,12 +1,13 @@
 import os
 import asyncio
-import aiocron
 from telegram import Bot
 from telegram.constants import ParseMode
 from PIL import Image
 from mytoken import TOKEN
 from usd import main as get_usd_price 
 from write import make_image
+import pytz
+from datetime import datetime
 
 CHANNEL_ID = "@stronghold_usdollar"
 
@@ -22,7 +23,6 @@ def convert_to_sticker(input_path, output_path):
 async def send_sticker():
     print('hello')
 
-
     bot = Bot(TOKEN)
 
     try:
@@ -31,9 +31,7 @@ async def send_sticker():
         print(f"Error fetching USD price: {e}")
         usd_price = '.'
 
-
     make_image(usd_price)  
-
     convert_to_sticker(INPUT_IMAGE, STICKER_IMAGE)
 
     async with bot:
@@ -44,18 +42,28 @@ async def send_sticker():
                 print(f"Error sending USD price sticker: {e}")
                 
     print("Sticker sent successfully!")
-
     os.remove(STICKER_IMAGE)
 
-
+async def check_time_and_run():
+    # Define the Tehran timezone
+    tehran_tz = pytz.timezone('Asia/Tehran')
+    
+    while True:
+        # Get the current time in Tehran
+        tehran_time = datetime.now(tehran_tz)
+        
+        # Check if it's 10 PM in Tehran
+        if tehran_time.hour == 22 and tehran_time.minute == 0:
+            await send_sticker()
+            # Sleep for a minute to avoid multiple triggers within the same minute
+            await asyncio.sleep(60)
+        else:
+            # Sleep for a short time before checking again
+            await asyncio.sleep(30)
 
 async def main():
-    aiocron.crontab("0 22 * * *", func=send_sticker, start=True)
-
     print("Bot is running and waiting for the scheduled task...")
-    while True:
-        await asyncio.sleep(3600)
+    await check_time_and_run()
 
 if __name__ == "__main__":
     asyncio.run(main())
-
